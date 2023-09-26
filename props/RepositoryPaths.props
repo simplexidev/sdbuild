@@ -1,0 +1,76 @@
+<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* FileName:             RepositoryPaths.props
+* Copyright/License:    https://github.com/simplexidev/sdbuild/blob/main/LICENSE.md
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Required paths. These cannot be overridden. -->
+  <PropertyGroup>
+    <SDRepositoryPath>$([System.IO.Directory]::GetParent($(MSBuildThisFileDirectory)))./</SDRepositoryPath>
+    <SDSourcesPath>$(SDRepositoryPath)sources/</SDSourcesPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SDDotMSBuildPath>$(SDRepositoryPath).msbuild/</SDDotMSBuildPath>
+    <SDDotMSBuildPropsPath>$(SDDotMSBuildPath)props/</SDDotMSBuildPropsPath>
+    <SDDotMSBuildTargetsPath>$(SDDotMSBuildPath)targets/</SDDotMSBuildTargetsPath>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <SDBuildPath>$(RepositoryPath)build\</SDBuildPath>
+    <SDBuildBaseOutputPath>$(SDBuildPath)bin\</SDBuildBaseOutputPath>
+    <SDBuildOutputPath>$(SDBuildBaseOutputPath)$(MSBuildProjectName)\</SDBuildOutputPath>
+    <SDBuildBaseIntermediatePath>$(SDBuildPath)obj\</SDBuildBaseIntermediatePath>
+    <SDBuildIntermediatePath>$(SDBuildBaseIntermediatePath)$(MSBuildProjectName)\</SDBuildIntermediatePath>
+    <SDBuildPackagePath>$(SDBuildPath)pkg\</SDBuildPackagePath>
+    <SDBuildDocumentationPath>$(SDBuildPath)doc\</SDBuildDocumentationPath>
+  </PropertyGroup>
+
+  <!-- Overridden SDK Properties -->
+  <PropertyGroup>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+
+    <SDBuildBaseOutputPath>$(SDFxProjectBuildBinPath)</SDBuildBaseOutputPath>
+    <SDBuildOutputPath>$(BaseOutputPath)</SDBuildOutputPath>
+    <SDBuildBaseIntermediatePath>$(SDFxProjectBuildObjPath)</SDBuildBaseIntermediatePath>
+    <SDBuildIntermediatePath>$(BaseIntermediateOutputPath)</SDBuildIntermediatePath>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <SDCommonPath>$(SDSourcesPath)Common/</SDCommonPath>
+
+    <SDCommonExists Condition="Exists($(SDCommonPath))">true</SDCommonExists>
+    <SDCommonExists Condition="'$(SDCommonExists)'==''">false</SDCommonExists>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SDCommonSourcesPath>$(SDCommonPath)src/</SDCommonSourcesPath>
+
+    <SDCommonSourcesExists Condition="Exists($(SDCommonSourcesPath))">true</SDCommonSourcesExists>
+    <SDCommonSourcesExists Condition="'$(SDCommonExists)'==''">false</SDCommonSourcesExists>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SDCommonTestsPath>$(SDCommonPath)tests/</SDCommonTestsPath>
+
+    <SDCommonTestsExists Condition="Exists($(SDCommonTestsPath))">true</SDCommonTestsExists>
+    <SDCommonTestsExists Condition="'$(SDCommonExists)'==''">false</SDCommonTestsExists>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SDCommonResourcesPath>$(SDCommonPath)res/</SDCommonResourcesPath>
+
+    <SDCommonResourcesExists Condition="Exists($(SDCommonResourcesPath))">true</SDCommonResourcesExists>
+    <SDCommonResourcesExists Condition="'$(SDCommonExists)'==''">false</SDCommonResourcesExists>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SDProjectPath>$(SDSourcesPath)$(MSBuildProjectName)/</SDProjectPath>
+    <SDProjectSourcesPath>$(SDProjectPath)src/</SDProjectSourcesPath>
+    <SDProjectTestsPath>$(SDProjectPath)tests/</SDProjectTestsPath>
+    <SDProjectResourcesPath>$(SDProjectPath)res/</SDProjectResourcesPath>
+    <SDProjectDocumentationPath>$(SDProjectPath)doc/</SDProjectDocumentationPath>
+  </PropertyGroup>
+
+</Project>

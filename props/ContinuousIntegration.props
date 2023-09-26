@@ -1,0 +1,16 @@
+<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* FileName:             ContinuousIntegration.props
+* Copyright/License:    https://github.com/simplexidev/sdbuild/blob/main/LICENSE.md
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <SDCIBuildService Condition="'$(SDCIBuildService)' == ''">LocalMachine</SDCIBuildService>
+    <SDCIBuildNumber Condition="'$(SDCIBuildNumber)' == ''">$([System.DateTime]::Now.ToString('yyyyMMdd'))</SDCIBuildNumber>
+    <SDCIBuildBranch Condition="'$(SDCIBuildBranch)' == ''">local</SDCIBuildBranch>
+
+    <ContinuousIntegrationBuild Condition="'$(SDCIBuildService)'!='LocalMachine' AND '$(SDCIBuildBranch)'!='local'">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+  
+</Project>
