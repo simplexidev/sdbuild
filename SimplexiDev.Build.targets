@@ -5,9 +5,105 @@
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <Import Project="$(MSBuildThisFileDirectory)targets/AssemblyAttributes.targets"/>
-  <Import Project="$(MSBuildThisFileDirectory)targets/RepositoryFiles.targets"/>
-  <Import Project="$(MSBuildThisFileDirectory)targets/DefaultReferences.targets"/>
-  <Import Project="$(MSBuildThisFileDirectory)targets/SDGenerateVersion.targets"/>
+  <!-- Assembly Attributes
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <ItemGroup Condition="$(SDProjectType) != 'Tests'">
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>$(MSBuildProjectName).Tests</_Parameter1>
+      <_Parameter1_TypeName>System.String</_Parameter1_TypeName>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <!-- Default Files
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+  <!-- Source Files ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <ItemGroup>
+    <Compile Condition="'$(SDProjectIsTest)'=='true')" Include="tests\**\*.cs" />
+    <Compile Condition="'$(SDProjectIsTest)'!='true')" Include="src\**\*.cs" />
+  </ItemGroup>
+
+  <!-- String Resources ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <ItemGroup>
+    <EmbeddedResource Include="$(SDProjectResourcesPath)Strings.resx" Condition="Exists('$(SDProjectResourcesPath)Strings.resx')">
+      <LogicalName>$(RootNamespace).Resources.Strings</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <!-- Repository Files ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <ItemGroup Condition="'$(SDProjectIsPackable)'=='true'">
+    <Content Condition="'$(SDRepositoryReadmeExists)'=='true'" Include="$(SDRepositoryReadmePath)">
+      <CopyToOutputDirectory>true</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </Content>
+    <Content Condition="'$(SDRepositoryLicenseExists)'=='true'" Include="$(SDRepositoryLicensePath)">
+      <CopyToOutputDirectory>true</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </Content>
+    <Content Condition="'$(SDRepositoryThirdPartyNoticesExists)'=='true'" Include="$(SDRepositoryThirdPartyNoticesPath)">
+      <CopyToOutputDirectory>true</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </Content>
+  </ItemGroup>
+
+  <!-- Default References
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+  <!-- SourceLink (GitHub) ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <ItemGroup Condition="'$(SDProjectIsPackable)'=='true'">
+    <PackageReference Import="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="all" />
+  </ItemGroup>
+  
+  <!-- Source Generators ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <ItemGroup Condition="'$(SDProjectType)'=='Generator'">
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.7.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
+  </ItemGroup>
+  
+  <!-- MSTest v2 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <ItemGroup Condition="'$(SDProjectType)'=='Tests'">
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
+    <PackageReference Include="MSTest.TestAdapter" Version="3.1.1" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.1.1" />
+  </ItemGroup>
+
+  <!-- Version Generation
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+  <!-- SDVersionGenerator Task ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <UsingTask TaskName="SDVersionGenerator"  TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <BuildNumber ParameterType="System.String" Required="true" />
+      <BuildBranch ParameterType="System.String" Required="true" />
+      <RepositoryVersion ParameterType="System.String" Required="true" />
+      <GeneratedVersion ParameterType="System.String" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+        string branch = BuildBranch;
+        if (branch.Contains("pull"))
+        {
+            string[] refParts = branch.Split('/');
+            branch = $"{refParts[1]}{refParts[2]}";
+        }
+        SDGeneratedVersion = $"{RepositoryVersion}-{branch}.{BuildNumber}";
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <!-- SDGenerateVersion Target ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <Target Name="SDGenerateVersion">
+    <SDVersionGenerator RepositoryVersion="$(SDRepositoryVersion)" BuildNumber="$(SDCIBuildNumber)" BuildBranch="$(SDCIBuildBranch)">
+      <Output TaskParameter="GeneratedVersion" PropertyName="SDGeneratedVersion" />
+    </SDVersionGenerator>
+
+    <PropertyGroup>
+      <Version>$(SDGeneratedVersion)</Version>
+      <PackageVersion Condition="'$(SDProjectIsPackable)' == 'true'">$(Version)</PackageVersion>
+    </PropertyGroup>
+  </Target>
     
 </Project>

@@ -5,8 +5,190 @@
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <Import Project="$(MSBuildThisFileDirectory)props/RepositoryPaths.props"/>
-  <Import Project="$(MSBuildThisFileDirectory)props/RepositoryFiles.props"/>
-  <Import Project="$(MSBuildThisFileDirectory)props/ProjectDefaults.props"/>
-    
+  <!-- Continuous Integration (Automated Builds)
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <PropertyGroup>
+    <SDRepositorySupportsCI Condition="'$(SDRepositorySupportsCI)'!='false'">true</SDRepositorySupportsCI>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(SDRepositorySupportsCI)'=='true'">
+
+    <!-- 
+    Represents the automated build service being used to build the current project.<br/><br/>Supported Values:<br/>`GitHubActions` or `LocalMachine`
+    -->
+    <SDCIBuildService Condition="'$(SDCIBuildService)' == ''">LocalMachine</SDCIBuildService>
+
+    <!--
+    Represents the build number issued by the build service for this project.
+    -->
+    <SDCIBuildNumber Condition="'$(SDCIBuildNumber)' == ''">$([System.DateTime]::Now.ToString('yyyyMMdd'))</SDCIBuildNumber>
+
+    <!--
+    Represents the Git branch associated with this build.
+    -->
+    <SDCIBuildBranch Condition="'$(SDCIBuildBranch)' == ''">local</SDCIBuildBranch>
+
+    <!-- Overridden SDK Properties -->
+    <ContinuousIntegrationBuild Condition="'$(SDCIBuildService)'!='LocalMachine' AND '$(SDCIBuildBranch)'!='local'">true</ContinuousIntegrationBuild>
+    <Configuration Condition="'$(ContinuousIntegrationBuild)' == 'true'">Release</Configuration>
+
+  </PropertyGroup>
+
+  <!-- Repository Directory Paths
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+  <!-- Root Repository Paths ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <PropertyGroup>
+
+    <!--
+    The root path of the repository. This should always be the parent directory of this file's directory (./../)
+    -->
+    <SDRepositoryPath>$([System.IO.Directory]::GetParent($(MSBuildThisFileDirectory)))./</SDRepositoryPath>
+    <SDDotMSBuildPath>$(SDRepositoryPath).msbuild/</SDDotMSBuildPath>
+
+  </PropertyGroup>
+
+  <!-- Global Build Paths ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <PropertyGroup>
+    <SDBuildPath Condition="'$(SDBuildPath)'==''">$(RepositoryPath)build/</SDBuildPath>
+    <SDBuildBaseOutputPath>$(SDBuildPath)bin/</SDBuildBaseOutputPath>
+    <SDBuildOutputPath>$(SDBuildBaseOutputPath)$(MSBuildProjectName)/</SDBuildOutputPath>
+    <SDBuildBaseIntermediatePath>$(SDBuildPath)obj/</SDBuildBaseIntermediatePath>
+    <SDBuildIntermediatePath>$(SDBuildBaseIntermediatePath)$(MSBuildProjectName)/</SDBuildIntermediatePath>
+    <SDBuildPackagePath>$(SDBuildPath)pkg/</SDBuildPackagePath>
+    <SDBuildDocumentationPath>$(SDBuildPath)doc/</SDBuildDocumentationPath>
+
+    <!-- Overridden SDK Properties -->
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <BaseOutputPath>$(SDBuildOutputPath)</BaseOutputPath>
+    <OutputPath>$(BaseOutputPath)</OutputPath>
+    <BaseIntermediateOutputPath>$(SDBuildIntermediatePath)</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
+  </PropertyGroup>
+
+  <!-- Source/Project Paths ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <PropertyGroup>
+    <SDSourcesPath>$(SDRepositoryPath)sources/</SDSourcesPath>
+
+    <SDProjectPath>$(SDSourcesPath)$(MSBuildProjectName)/</SDProjectPath>
+    <SDProjectSourcesPath>$(SDProjectPath)src/</SDProjectSourcesPath>
+    <SDProjectTestsPath>$(SDProjectPath)tests/</SDProjectTestsPath>
+    <SDProjectResourcesPath>$(SDProjectPath)res/</SDProjectResourcesPath>
+    <SDProjectDocumentationPath>$(SDProjectPath)doc/</SDProjectDocumentationPath>
+  </PropertyGroup>
+
+  <!-- Common Folder Paths ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <PropertyGroup>
+    <SDCommonPath>$(SDSourcesPath)Common/</SDCommonPath>
+    <SDCommonSourcesPath>$(SDCommonPath)src/</SDCommonSourcesPath>
+    <SDCommonTestsPath>$(SDCommonPath)tests/</SDCommonTestsPath>
+    <SDCommonResourcesPath>$(SDCommonPath)res/</SDCommonResourcesPath>
+
+    <SDCommonExists Condition="Exists($(SDCommonPath))">true</SDCommonExists>
+    <SDCommonExists Condition="'$(SDCommonExists)'==''">false</SDCommonExists>
+    <SDCommonSourcesExists Condition="Exists($(SDCommonSourcesPath))">true</SDCommonSourcesExists>
+    <SDCommonSourcesExists Condition="'$(SDCommonExists)'==''">false</SDCommonSourcesExists>
+    <SDCommonTestsExists Condition="Exists($(SDCommonTestsPath))">true</SDCommonTestsExists>
+    <SDCommonTestsExists Condition="'$(SDCommonExists)'==''">false</SDCommonTestsExists>
+    <SDCommonResourcesExists Condition="Exists($(SDCommonResourcesPath))">true</SDCommonResourcesExists>
+    <SDCommonResourcesExists Condition="'$(SDCommonExists)'==''">false</SDCommonResourcesExists>
+  </PropertyGroup>
+
+  <!-- Repository File Paths
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <PropertyGroup>
+    <SDRepositoryReadmePath>$(SDRepositoryPath)README.md</SDRepositoryReadmePath>
+    <SDRepositoryLicensePath>$(SDRepositoryPath)LICENSE.md</SDRepositoryLicensePath>
+    <SDRepositoryThirdPartyNoticesPath>$(SDRepositoryPath)THIRD_PARTY_NOTICES.md</SDRepositoryThirdPartyNoticesPath>
+
+    <SDRepositoryReadmeExists Condition="Exists($(SDRepositoryReadmePath))">true</SDRepositoryReadmeExists>
+    <SDRepositoryReadmeExists Condition="'$(SDRepositoryReadmeExists)'==''">false</SDRepositoryReadmeExists>
+    <SDRepositoryLicenseExists Condition="Exists($(SDRepositoryLicensePath))">true</SDRepositoryLicenseExists>
+    <SDRepositoryLicenseExists Condition="'$(SDRepositoryLicenseExists)'==''">false</SDRepositoryLicenseExists>
+    <SDRepositoryThirdPartyNoticesExists Condition="Exists($(SDRepositoryThirdPartyNoticesPath))">true</SDRepositoryThirdPartyNoticesExists>
+    <SDRepositoryThirdPartyNoticesExists Condition="'$(SDRepositoryThirdPartyNoticesExists)'==''">false</SDRepositoryThirdPartyNoticesExists>
+  </PropertyGroup>
+
+  <!-- Overridden MSBuild Properties
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+  <!-- Global Properties ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <PropertyGroup>
+    <LangVersion>11.0</LangVersion>
+    <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
+    <Platform>Any CPU</Platform>
+    <AssemblyName>$(MSBuildProjectName)</AssemblyName>
+    <AssemblyTitle>$(MSBuildProjectName)</AssemblyTitle>
+    <RootNamespace>$(MSBuildProjectName)</RootNamespace>
+    <NeutralLanguage>en</NeutralLanguage>
+    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+    <DefineConstants>$(DefineConstants);SDEV</DefineConstants>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+
+  <!-- Debug-Specific Properties ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+    <Optimize>false</Optimize>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <DefineConstants>$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
+  <!-- Release-Specific Properties ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
+    <Optimize>true</Optimize>
+    <DebugSymbols>false</DebugSymbols>
+    <DebugType>embedded</DebugType>
+    <DefineConstants>$(DefineConstants);RELEASE</DefineConstants>
+  </PropertyGroup>
+
+  <!-- Library-Specific Properties ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <PropertyGroup Condition="'$(SDProjectType)'=='Library'">
+    <SDProjectIsPackable Condition="'$(SDProjectIsPackable)'==''">true</SDProjectIsPackable>
+    <TargetFramework>net6.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <DocumentationFile>$(SDBuildDocumentationPath)$(MSBuildProjectName).xml</DocumentationFile>
+  </PropertyGroup>
+
+  <!-- Generator-Specific Properties ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <PropertyGroup Condition="'$(SDProjectType)'=='Generator'">
+    <SDProjectIsPackable Condition="'$(SDProjectIsPackable)'==''">true</SDProjectIsPackable>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <DocumentationFile>$(SDBuildDocumentationPath)$(MSBuildProjectName).xml</DocumentationFile>
+  </PropertyGroup>
+
+  <!-- Tests-Specific Properties ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <PropertyGroup Condition="'$(SDProjectType)'=='Tests'">
+    <SDProjectIsPackable Condition="'$(SDProjectIsPackable)'==''">false</SDProjectIsPackable>
+    <TargetFramework>net6.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <!-- Packable Project-Specific Properties ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <PropertyGroup>
+    <SDProjectIsPackable Condition="'$(SDProjectIsPackable)'==''">false</SDProjectIsPackable>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(SDProjectIsPackable)' == 'true'">
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/simplexidev/$(SDRepositoryName)</RepositoryUrl>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedAllSources>true</EmbedAllSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <Copyright>Copyright © $(SDRepositoryCreationYear)-2023 Thomas Corwin, et al. All Rights Reserved.</Copyright>
+    <PackageLicenseFile>$(SDRepositoryLicensePath)</PackageLicenseFile>
+    <PackageId>$(MSBuildProjectName)</PackageId>
+    <PackageProjectUrl>$(SDRepositoryUrl)</PackageProjectUrl>
+    <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Debug'">false</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
+    <PackageOutputPath Condition="'$(Configuration)' == 'Release'">$(SDBuildPackagePath)</PackageOutputPath>
+  </PropertyGroup>
+  
 </Project>
