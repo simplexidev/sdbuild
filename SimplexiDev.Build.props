@@ -41,9 +41,13 @@
   <PropertyGroup>
 
     <!--
-    The root path of the repository. This should always be the parent directory of this file's directory (./../)
+    The root path of the repository. It defaults to the parent directory of this file.
     -->
-    <SDRepositoryPath>$([System.IO.Directory]::GetParent($(MSBuildThisFileDirectory)))./</SDRepositoryPath>
+    <SDRepositoryPath Condition="'$(SDRepositoryPath)'==''">$([System.IO.Directory]::GetParent($(MSBuildThisFileDirectory)))./</SDRepositoryPath>
+
+    <!--
+    The path for this file (SimplexiDev.Build.props) and the respective targets file.
+    -->
     <SDDotMSBuildPath>$(SDRepositoryPath).msbuild/</SDDotMSBuildPath>
 
   </PropertyGroup>
@@ -116,73 +120,52 @@
   <PropertyGroup>
     <LangVersion>11.0</LangVersion>
     <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
-    <Platform>Any CPU</Platform>
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
     <AssemblyTitle>$(MSBuildProjectName)</AssemblyTitle>
     <RootNamespace>$(MSBuildProjectName)</RootNamespace>
     <NeutralLanguage>en</NeutralLanguage>
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
-    <DefineConstants>$(DefineConstants);SDEV</DefineConstants>
+    <DefineConstants>$(DefineConstants);SDEV;$(DefineConstants);$(MSBuildProjectName.ToUpper().Replace('.', '_'))</DefineConstants>
+    <DefineConstants Condition="'$(Configuration)' == 'Release'">$(DefineConstants);RELEASE</DefineConstants>
     <EnableDefaultItems>false</EnableDefaultItems>
     <ImplicitUsings>disable</ImplicitUsings>
-  </PropertyGroup>
-
-  <!-- Debug-Specific Properties ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
-    <Optimize>false</Optimize>
     <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <DefineConstants>$(DefineConstants)</DefineConstants>
+    <Optimize Condition="'$(Configuration)' == 'Debug'">false</Optimize>
+    <Optimize Condition="'$(Configuration)' == 'Release'">true</Optimize>
+    <DebugType Condition="'$(Configuration)' == 'Debug'">full</DebugType>
+    <DebugType Condition="'$(Configuration)' == 'Release'">embedded</DebugType>
   </PropertyGroup>
 
-  <!-- Release-Specific Properties ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
-    <Optimize>true</Optimize>
-    <DebugSymbols>false</DebugSymbols>
-    <DebugType>embedded</DebugType>
-    <DefineConstants>$(DefineConstants);RELEASE</DefineConstants>
-  </PropertyGroup>
-
-  <!-- Library-Specific Properties ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-  <PropertyGroup Condition="'$(SDProjectType)'=='Library'">
-    <SDProjectIsPackable Condition="'$(SDProjectIsPackable)'==''">true</SDProjectIsPackable>
-    <TargetFramework>net6.0</TargetFramework>
-    <OutputType>Library</OutputType>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <DocumentationFile>$(SDBuildDocumentationPath)$(MSBuildProjectName).xml</DocumentationFile>
-  </PropertyGroup>
-
-  <!-- Generator-Specific Properties ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-  <PropertyGroup Condition="'$(SDProjectType)'=='Generator'">
-    <SDProjectIsPackable Condition="'$(SDProjectIsPackable)'==''">true</SDProjectIsPackable>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <OutputType>Library</OutputType>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <DocumentationFile>$(SDBuildDocumentationPath)$(MSBuildProjectName).xml</DocumentationFile>
-  </PropertyGroup>
-
-  <!-- Tests-Specific Properties ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-  <PropertyGroup Condition="'$(SDProjectType)'=='Tests'">
-    <SDProjectIsPackable Condition="'$(SDProjectIsPackable)'==''">false</SDProjectIsPackable>
-    <TargetFramework>net6.0</TargetFramework>
-    <OutputType>Library</OutputType>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
-  </PropertyGroup>
-
-  <!-- Packable Project-Specific Properties ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <!-- Condition-Specific Properties ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
   <PropertyGroup>
+    <SDProjectType Condition="'$(MSBuildProjectName.EndsWith('.Tests')'=='true'">Tests</SDProjectType>
+    <SDProjectType Condition="'$(MSBuildProjectName.StartsWith('SimplexiDev.Tools.')'=='true'">Tool</SDProjectType>
+    <SDProjectType Condition="'$(MSBuildProjectName.StartsWith('SimplexiDev.Build.Generators.')'=='true'">Generator</SDProjectType>
+    <SDProjectType Condition="'$(SDProjectType)'==''">Library</SDProjectType>
+    
+    <TargetFramework Condition="'$(SDProjectType)'=='Generator'">netstandard2.0</TargetFramework>
+    <TargetFramework Condition="'$(TargetFramework)'==''">net6.0</TargetFramework>
+
+    <OutputType Condition="'$(SDProjectType)'=='Tool'">Exe</OutputType>
+    <OutputType Condition="'$(OutputType)'==''">Library</OutputType>
+
+    <GenerateDocumentationFile Condition="'$(SDProjectType)'=='Library'">true</GenerateDocumentationFile>
+    <GenerateDocumentationFile Condition="'$(SDProjectType)'!='Library'">false</GenerateDocumentationFile>
+    <DocumentationFile Condition="'$(SDProjectType)'=='Library'">$(SDBuildDocumentationPath)$(MSBuildProjectName).xml</DocumentationFile>
+
+    <SDProjectIsPackable Condition="'$(SDProjectType)'!='Tests'">true</SDProjectIsPackable>
     <SDProjectIsPackable Condition="'$(SDProjectIsPackable)'==''">false</SDProjectIsPackable>
   </PropertyGroup>
+  
   <PropertyGroup Condition="'$(SDProjectIsPackable)' == 'true'">
+    <PackAsTool Condition="'$(SDProjectType)'=='Tool'">true</PackAsTool>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/simplexidev/$(SDRepositoryName)</RepositoryUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedAllSources>true</EmbedAllSources>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <Copyright>Copyright © $(SDRepositoryCreationYear)-2023 Thomas Corwin, et al. All Rights Reserved.</Copyright>
+    <Copyright>Copyright © $(SDRepositoryCreationYear)-$([System.DateTime]::Now.ToString('yyyy')) Thomas Corwin, et al. All Rights Reserved.</Copyright>
     <PackageLicenseFile>$(SDRepositoryLicensePath)</PackageLicenseFile>
     <PackageId>$(MSBuildProjectName)</PackageId>
     <PackageProjectUrl>$(SDRepositoryUrl)</PackageProjectUrl>
@@ -190,5 +173,5 @@
     <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
     <PackageOutputPath Condition="'$(Configuration)' == 'Release'">$(SDBuildPackagePath)</PackageOutputPath>
   </PropertyGroup>
-  
+
 </Project>

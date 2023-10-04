@@ -7,7 +7,7 @@
 
   <!-- Assembly Attributes
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-  <ItemGroup Condition="$(SDProjectType) != 'Tests'">
+  <ItemGroup Condition="$(SDProjectType) == 'Library'">
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>$(MSBuildProjectName).Tests</_Parameter1>
       <_Parameter1_TypeName>System.String</_Parameter1_TypeName>
@@ -19,8 +19,7 @@
 
   <!-- Source Files ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
   <ItemGroup>
-    <Compile Condition="'$(SDProjectIsTest)'=='true')" Include="tests\**\*.cs" />
-    <Compile Condition="'$(SDProjectIsTest)'!='true')" Include="src\**\*.cs" />
+    <Compile Include="**\*.cs" />
   </ItemGroup>
 
   <!-- String Resources ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
