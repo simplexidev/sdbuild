@@ -1,0 +1,108 @@
+<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~   Repository: https://github.com/simplexidev/sdevlibs                                                                ~
+~   Package:    SimplexiDev.Build.Sdk                                                                                  ~
+~   File:       /sdk/Sdk.targets                                                                                       ~
+~   License:    https://github.com/simplexidev/sdevlibs/blob/main/LICENSE.md                                           ~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+<Project>
+
+  <!-- SimplexiDev.Build.targets Imports
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <PropertyGroup>
+    <ImportSimplexiDevBuildTargets Condition="'$(ImportSimplexiDevBuildTargets)'!='false'">true</ImportSimplexiDevBuildTargets>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(ImportSimplexiDevBuildTargets)'=='true' AND '$(SimplexiDevBuildTargetsPath)'==''">
+    <_SimplexiDevBuildTargetsFile Condition="'$(_SimplexiDevBuildTargetsFile)' == ''">SimplexiDev.Build.targets</_SimplexiDevBuildTargetsFile>
+    <_SimplexiDevBuildTargetsBasePath Condition="'$(_SimplexiDevBuildTargetsBasePath)'==''">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), '$(_SimplexiDevBuildTargetsFile)'))</_SimplexiDevBuildTargetsBasePath>
+    <SimplexiDevBuildTargetsPath Condition="'$(_SimplexiDevBuildTargetsBasePath)' != '' and '$(_SimplexiDevBuildTargetsFile)' != ''">$([System.IO.Path]::Combine('$(_SimplexiDevBuildTargetsBasePath)', '$(_SimplexiDevBuildTargetsFile)'))</SimplexiDevBuildTargetsPath>
+  </PropertyGroup>
+  <Import Condition="'$(ImportSimplexiDevBuildTargets)'=='true' AND Exists('$(SimplexiDevBuildTargetsPath)')"
+          Project="$(SimplexiDevBuildTargetsPath)" />
+
+  <!-- Assembly Attributes
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <ItemGroup Condition="$(ProjectType) == 'Library'">
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>$(MSBuildProjectName).Tests</_Parameter1>
+      <_Parameter1_TypeName>System.String</_Parameter1_TypeName>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <!-- Source Files
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <ItemGroup>
+    <Compile Condition="'$(ProjectType)'!='Tests'" Include="src\**\*.cs" />
+    <Compile Condition="'$(ProjectType)'=='Tests'" Include="tests\**\*.cs" />
+  </ItemGroup>
+
+  <!-- Resource Files
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <ItemGroup>
+    <_SDCResources Include="res\*.resx" />
+    <EmbeddedResource Include="@(_SDResources)" Condition="Exists('%(Identity)')">
+      <LogicalName>$(RootNamespace).Resources.%([System.IO.Path]::GetFileNameWithoutExtension('%(Filename)'))</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <!-- Other Files
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <ItemGroup Condition="'$(SDProjectIsPackable)'=='true'">
+    <None Condition="'$(SDRepositoryReadmeExists)'=='true'" Include="$(SDRepositoryReadmePath)">
+      <CopyToOutputDirectory>true</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </None>
+    <None Condition="'$(SDRepositoryLicenseExists)'=='true'" Include="$(SDRepositoryLicensePath)">
+      <CopyToOutputDirectory>true</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </None>
+    <None Condition="'$(SDRepositoryThirdPartyNoticesExists)'=='true'" Include="$(SDRepositoryThirdPartyNoticesPath)">
+      <CopyToOutputDirectory>true</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </None>
+  </ItemGroup>
+
+  <!-- SourceLink (GitHub)
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <ItemGroup Condition="'$(SDProjectIsPackable)'=='true'">
+    <PackageReference Import="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- Source Generators
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <ItemGroup Condition="'$(SDProjectType)'=='Generator'">
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.7.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- MSTest v2
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <ItemGroup Condition="'$(SDProjectType)'=='Tests'">
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
+    <PackageReference Include="MSTest.TestAdapter" Version="3.1.1" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.1.1" />
+  </ItemGroup>
+
+  <!-- Custom Tasks/Targets
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <UsingTask TaskName="SDBSdkValidateRepositoryProperties" AssemblyFile="$(MSBuildThisFileDirectory)netstandard2.0\SimplexiDev.Build.Sdk.dll" />
+  <UsingTask TaskName="SDBSdkValidateProjectType" AssemblyFile="$(MSBuildThisFileDirectory)netstandard2.0\SimplexiDev.Build.Sdk.dll" />
+  <Target Name="_SDBSdkValidateRepositoryProperties" >
+    <Message Importance="normal" Text="[SDBSDK]: Validating repository information..." />
+    <SDBSdkValidateRepositoryProperties RepositoryPath="$(RepositoryPath)" RepositorySourcesPath="$(RepositorySourcesPath)" RepositoryName="$(RepositoryName)" />
+    <Message Importance="normal" Text="[SDBSDK]: Repository information is valid." />
+  </Target>
+  <Target Name="_SDBSdkValidateProjectType">
+    <Message Importance="normal" Text="[SDBSDK]: Validating project type..." />
+    <SDBSdkValidateProjectType ProjectType="$(ProjectType)" />
+    <Message Importance="normal" Text="[SDBSDK]: Project type is valid." />
+  </Target>
+  <PropertyGroup>
+    <InitialTargets>_SDBSdkValidateRepositoryProperties;_SDBSdkValidateProjectType;$(InitialTargets)</InitialTargets>
+  </PropertyGroup>
+
+  <!-- Microsoft.NET.Sdk Import
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk"/>
+
+</Project>
