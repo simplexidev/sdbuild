@@ -85,6 +85,9 @@
 
   <!-- Custom Tasks/Targets
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <PropertyGroup>
+    <InitialTargets>_SDBSdkValidateRepositoryProperties;_SDBSdkValidateProjectType;$(InitialTargets)</InitialTargets>
+  </PropertyGroup>
   <UsingTask TaskName="SDBSdkValidateRepositoryProperties" AssemblyFile="$(MSBuildThisFileDirectory)netstandard2.0\SimplexiDev.Build.Sdk.dll" />
   <UsingTask TaskName="SDBSdkValidateProjectType" AssemblyFile="$(MSBuildThisFileDirectory)netstandard2.0\SimplexiDev.Build.Sdk.dll" />
   <Target Name="_SDBSdkValidateRepositoryProperties" >
@@ -97,9 +100,6 @@
     <SDBSdkValidateProjectType ProjectType="$(ProjectType)" />
     <Message Importance="normal" Text="[SDBSDK]: Project type is valid." />
   </Target>
-  <PropertyGroup>
-    <InitialTargets>_SDBSdkValidateRepositoryProperties;_SDBSdkValidateProjectType;$(InitialTargets)</InitialTargets>
-  </PropertyGroup>
 
   <!-- Microsoft.NET.Sdk Import
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->

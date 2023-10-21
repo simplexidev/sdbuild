@@ -49,9 +49,9 @@
   <!-- Project Information
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
   <PropertyGroup Condition="'$(ProjectType)'==''">
-    <ProjectType Condition="'$(MSBuildProjectName.Contains('Tests')'=='true'">Tests</ProjectType>
-    <ProjectType Condition="'$(MSBuildProjectName.Contains('Tool')'=='true'">Tool</ProjectType>
-    <ProjectType Condition="'$(MSBuildProjectName.Contains('.Build.Generators.')'=='true'">Generator</ProjectType>
+    <ProjectType Condition="$(MSBuildProjectName.Contains('.Tests')">Tests</ProjectType>
+    <ProjectType Condition="$(MSBuildProjectName.Contains('SimplexiDev.Build.Tools')">Tool</ProjectType>
+    <ProjectType Condition="$(MSBuildProjectName.Contains('SimplexiDev.Build.Generators.')">Generator</ProjectType>
     <ProjectType Condition="'$(ProjectType)'==''">Library</ProjectType>
   </PropertyGroup>
 
@@ -68,12 +68,13 @@
     <DocumentationFile Condition="'$(IsPackable)'=='true' AND '$(ProjectType)'=='Library' AND '$(Configuration)'=='Release'">$(RepositoryBuildPath)doc/$(MSBuildProjectName).xml</DocumentationFile>
   </PropertyGroup>
 
-  <!-- General Properties
+  <!-- Language/Runtime Information Properties
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
   <PropertyGroup>
     <LangVersion>11.0</LangVersion>
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
     <AssemblyTitle>$(MSBuildProjectName)</AssemblyTitle>
+    <
     <NeutralLanguage>en</NeutralLanguage>
     <EnableDefaultItems>false</EnableDefaultItems>
     <ImplicitUsings>disable</ImplicitUsings>
