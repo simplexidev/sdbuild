@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ~ Repository: https://github.com/simplexidev/sdbuildsdk                                                                ~
 ~ Package:    SimplexiDev.Build.Sdk                                                                                    ~
@@ -5,7 +6,10 @@
 ~ License:    https://github.com/simplexidev/sdbuildsdk/blob/main/LICENSE.md                                           ~
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 
-<Project>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
+  </PropertyGroup>
 
   <PropertyGroup>
     <UsingSimplexiDevBuildSdk>true</UsingSimplexiDevBuildSdk>
@@ -74,7 +78,6 @@
     <LangVersion>11.0</LangVersion>
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
     <AssemblyTitle>$(MSBuildProjectName)</AssemblyTitle>
-    <
     <NeutralLanguage>en</NeutralLanguage>
     <EnableDefaultItems>false</EnableDefaultItems>
     <ImplicitUsings>disable</ImplicitUsings>
