@@ -1,8 +1,8 @@
 <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-~   Repository: https://github.com/simplexidev/sdevlibs                                                                ~
-~   Package:    SimplexiDev.Build.Sdk                                                                                  ~
-~   File:       /sdk/Sdk.props                                                                                         ~
-~   License:    https://github.com/simplexidev/sdevlibs/blob/main/LICENSE.md                                           ~
+~ Repository: https://github.com/simplexidev/sdbuildsdk                                                                ~
+~ Package:    SimplexiDev.Build.Sdk                                                                                    ~
+~ File:       /sdk/Sdk.props                                                                                           ~
+~ License:    https://github.com/simplexidev/sdbuildsdk/blob/main/LICENSE.md                                           ~
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 
 <Project>
@@ -49,8 +49,8 @@
   <!-- Project Information
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
   <PropertyGroup Condition="'$(ProjectType)'==''">
-    <ProjectType Condition="'$(MSBuildProjectName.EndsWith('.Tests')'=='true'">Tests</ProjectType>
-    <ProjectType Condition="'$(MSBuildProjectName.Contains('.Tools.')'=='true'">Tool</ProjectType>
+    <ProjectType Condition="'$(MSBuildProjectName.Contains('Tests')'=='true'">Tests</ProjectType>
+    <ProjectType Condition="'$(MSBuildProjectName.Contains('Tool')'=='true'">Tool</ProjectType>
     <ProjectType Condition="'$(MSBuildProjectName.Contains('.Build.Generators.')'=='true'">Generator</ProjectType>
     <ProjectType Condition="'$(ProjectType)'==''">Library</ProjectType>
   </PropertyGroup>

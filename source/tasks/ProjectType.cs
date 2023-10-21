@@ -1,4 +1,11 @@
-﻿namespace SimplexiDev.Build.Tasks
+/***********************************************************************************************************************
+* Repository: https://github.com/simplexidev/sdbuildsdk                                                                *
+* Package:    SimplexiDev.Build.Sdk                                                                                    *
+* File:       /source/ProjectType.cs                                                                                   *
+* License:    https://github.com/simplexidev/sdbuildsdk/blob/main/LICENSE.md                                           *
+***********************************************************************************************************************/
+
+namespace SimplexiDev.Build.Tasks
 {
     public enum ProjectType
     {
