@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageReadmeFile>\README.md</PackageReadmeFile>
     <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
-    <LangVersion>11.0</LangVersion>
+    <LangVersion>latest</LangVersion>
     <Authors>SimplexiDev</Authors>
     <Company>SimplexiDev</Company>
     <Copyright>2023 © SimplexiDev. All Rights Reserved.</Copyright>
