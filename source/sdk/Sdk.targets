@@ -53,15 +53,15 @@
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
   <ItemGroup Condition="'$(SDProjectIsPackable)'=='true'">
     <None Condition="'$(SDRepositoryReadmeExists)'=='true'" Include="$(SDRepositoryReadmePath)">
-      <CopyToOutputDirectory>true</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Visible>false</Visible>
     </None>
     <None Condition="'$(SDRepositoryLicenseExists)'=='true'" Include="$(SDRepositoryLicensePath)">
-      <CopyToOutputDirectory>true</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Visible>false</Visible>
     </None>
     <None Condition="'$(SDRepositoryThirdPartyNoticesExists)'=='true'" Include="$(SDRepositoryThirdPartyNoticesPath)">
-      <CopyToOutputDirectory>true</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Visible>false</Visible>
     </None>
   </ItemGroup>
@@ -69,7 +69,7 @@
   <!-- SourceLink (GitHub)
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
   <ItemGroup Condition="'$(SDProjectIsPackable)'=='true'">
-    <PackageReference Import="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="all" />
   </ItemGroup>
 
   <!-- Source Generators

@@ -53,9 +53,9 @@
   <!-- Project Information
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
   <PropertyGroup Condition="'$(ProjectType)'==''">
-    <ProjectType Condition="$(MSBuildProjectName.Contains('.Tests')">Tests</ProjectType>
-    <ProjectType Condition="$(MSBuildProjectName.Contains('SimplexiDev.Build.Tools')">Tool</ProjectType>
-    <ProjectType Condition="$(MSBuildProjectName.Contains('SimplexiDev.Build.Generators.')">Generator</ProjectType>
+    <ProjectType Condition="$(MSBuildProjectName.Contains('.Tests'))">Tests</ProjectType>
+    <ProjectType Condition="$(MSBuildProjectName.Contains('SimplexiDev.Build.Tools'))">Tool</ProjectType>
+    <ProjectType Condition="$(MSBuildProjectName.Contains('SimplexiDev.Build.Generators.'))">Generator</ProjectType>
     <ProjectType Condition="'$(ProjectType)'==''">Library</ProjectType>
   </PropertyGroup>
 
@@ -75,10 +75,10 @@
   <!-- Language/Runtime Information Properties
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
   <PropertyGroup>
-    <LangVersion>11.0</LangVersion>
+    <LangVersion>latest</LangVersion>
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
     <AssemblyTitle>$(MSBuildProjectName)</AssemblyTitle>
-    <NeutralLanguage>en</NeutralLanguage>
+    <NeutralLanguage>1033</NeutralLanguage>
     <EnableDefaultItems>false</EnableDefaultItems>
     <ImplicitUsings>disable</ImplicitUsings>
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>

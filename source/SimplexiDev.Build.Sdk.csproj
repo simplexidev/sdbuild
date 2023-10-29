@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageReadmeFile>\README.md</PackageReadmeFile>
     <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
-    <LangVersion>11.0</LangVersion>
+    <LangVersion>latest</LangVersion>
     <Authors>SimplexiDev</Authors>
     <Company>SimplexiDev</Company>
     <Copyright>2023 © SimplexiDev. All Rights Reserved.</Copyright>
@@ -21,7 +21,7 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <DevelopmentDependency>true</DevelopmentDependency>
-    <Version>1.0.3</Version>
+    <Version>1.0.4</Version>
   </PropertyGroup>
   <ItemGroup Condition="'$(IsPackable)' == 'true'">
     <None Include="Sdk\**" Pack="true" PackagePath="Sdk\" />
