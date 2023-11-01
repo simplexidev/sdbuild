@@ -21,16 +21,17 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <DevelopmentDependency>true</DevelopmentDependency>
-    <Version>1.0.4</Version>
+    <Version>2.1.0</Version>
   </PropertyGroup>
   <ItemGroup Condition="'$(IsPackable)' == 'true'">
     <None Include="Sdk\**" Pack="true" PackagePath="Sdk\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="README.md" Pack="true" PackagePath="\"/>
+    <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.7.2" ExcludeAssets="Runtime" PrivateAssets="All" />
+    <PackageReference Include="NuGet.Frameworks" Version="6.7.0" />
   </ItemGroup>
   
 </Project>

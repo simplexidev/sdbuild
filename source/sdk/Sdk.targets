@@ -7,9 +7,6 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
-  </PropertyGroup>
 
   <!-- SimplexiDev.Build.targets Imports
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
@@ -36,52 +33,38 @@
   <!-- Source Files
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
   <ItemGroup>
-    <Compile Condition="'$(ProjectType)'!='Tests'" Include="src\**\*.cs" />
-    <Compile Condition="'$(ProjectType)'=='Tests'" Include="tests\**\*.cs" />
+    <Compile Include="**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SourceRoot Include="$(RepositorySourcesPath)/"/>
   </ItemGroup>
 
   <!-- Resource Files
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
   <ItemGroup>
-    <_SDCResources Include="res\*.resx" />
-    <EmbeddedResource Include="@(_SDResources)" Condition="Exists('%(Identity)')">
-      <LogicalName>$(RootNamespace).Resources.%([System.IO.Path]::GetFileNameWithoutExtension('%(Filename)'))</LogicalName>
+    <_SDResources Include="res\*.resx" />
+    <EmbeddedResource Include="@(_SDResources)">
+      <LogicalName>$(RootNamespace).Resources.$([System.IO.Path]::GetFileNameWithoutExtension('%(Filename)'))</LogicalName>
     </EmbeddedResource>
-  </ItemGroup>
-
-  <!-- Other Files
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-  <ItemGroup Condition="'$(SDProjectIsPackable)'=='true'">
-    <None Condition="'$(SDRepositoryReadmeExists)'=='true'" Include="$(SDRepositoryReadmePath)">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Visible>false</Visible>
-    </None>
-    <None Condition="'$(SDRepositoryLicenseExists)'=='true'" Include="$(SDRepositoryLicensePath)">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Visible>false</Visible>
-    </None>
-    <None Condition="'$(SDRepositoryThirdPartyNoticesExists)'=='true'" Include="$(SDRepositoryThirdPartyNoticesPath)">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Visible>false</Visible>
-    </None>
   </ItemGroup>
 
   <!-- SourceLink (GitHub)
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-  <ItemGroup Condition="'$(SDProjectIsPackable)'=='true'">
+  <ItemGroup Condition="'$(IsPackable)'=='true'">
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="all" />
   </ItemGroup>
 
   <!-- Source Generators
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-  <ItemGroup Condition="'$(SDProjectType)'=='Generator'">
+  <ItemGroup Condition="'$(ProjectType)'=='Generator'">
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.7.0" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
   </ItemGroup>
 
   <!-- MSTest v2
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-  <ItemGroup Condition="'$(SDProjectType)'=='Tests'">
+  <ItemGroup Condition="'$(ProjectType)'=='Tests'">
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
     <PackageReference Include="MSTest.TestAdapter" Version="3.1.1" />
     <PackageReference Include="MSTest.TestFramework" Version="3.1.1" />
@@ -89,21 +72,67 @@
 
   <!-- Custom Tasks/Targets
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+  <UsingTask TaskName="_ValidateSDBSdkRepositoryProperties" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <ReturnValue ParameterType="System.Boolean" Output="true" />
+      <RepoName ParameterType="System.String" Required="true" />
+      <RepoPath ParameterType="System.String" Required="true" />
+      <SourcesPath ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+     <Using Namespace="System.IO" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        if (string.IsNullOrWhiteSpace(RepoPath) || !Directory.Exists(RepoPath))
+            ReturnValue = false;
+        if (!Directory.Exists(Path.Combine(RepoPath, ".git")) && !File.Exists(Path.Combine(RepoPath, ".git")))
+            ReturnValue = false;
+        if (string.IsNullOrWhiteSpace(RepoName))
+            ReturnValue = false;
+        if (string.IsNullOrWhiteSpace(SourcesPath) || !Directory.Exists(SourcesPath))
+            ReturnValue = false;
+        ReturnValue = true;
+   ]]></Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="ValidateRepositoryProperties">
+    <_ValidateSDBSdkRepositoryProperties RepoName="$(RepositoryName)" RepoPath="$(RepositoryPath)" SourcesPath="$(RepositorySourcesPath)">
+      <Output PropertyName="RepositoryPropertiesAreValid" TaskParameter="ReturnValue" />
+    </_ValidateSDBSdkRepositoryProperties>
+    <Error Condition="'$(RepositoryPropertiesAreValid)' == 'false'" Text="Repository properties are invalid." Code="SDBSDK0001" ContinueOnError="ErrorAndStop" />
+  </Target>
+
+  <UsingTask TaskName="_ValidateSDBSdkProjectType" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <ReturnValue ParameterType="System.Boolean" Output="true" />
+      <ProjType ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        string[] validProjectTypes = new string[]
+        {
+            "Library",
+            "Tests",
+            "Generator",
+            "Tool"
+        }
+
+        ReturnValue = validProjectTypes.Contains(ProjType);
+   ]]></Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="ValidateProjectType">
+    <_ValidateSDBSdkProjectType ProjType="$(ProjectType)">
+      <Output PropertyName="ProjectTypeIsValid" TaskParameter="ReturnValue" />
+    </_ValidateSDBSdkProjectType>
+    <Error Condition="'$(ProjectTypeIsValid)' == 'false'" Text="Project type is invalid." Code="SDBSDK0002" ContinueOnError="ErrorAndStop" />
+  </Target>
+
   <PropertyGroup>
-    <InitialTargets>_SDBSdkValidateRepositoryProperties;_SDBSdkValidateProjectType;$(InitialTargets)</InitialTargets>
+    <InitialTargets>ValidateProjectType;ValidateRepositoryProperties;$(InitialTargets)</InitialTargets>
   </PropertyGroup>
-  <UsingTask TaskName="SDBSdkValidateRepositoryProperties" AssemblyFile="$(MSBuildThisFileDirectory)netstandard2.0\SimplexiDev.Build.Sdk.dll" />
-  <UsingTask TaskName="SDBSdkValidateProjectType" AssemblyFile="$(MSBuildThisFileDirectory)netstandard2.0\SimplexiDev.Build.Sdk.dll" />
-  <Target Name="_SDBSdkValidateRepositoryProperties" >
-    <Message Importance="normal" Text="[SDBSDK]: Validating repository information..." />
-    <SDBSdkValidateRepositoryProperties RepositoryPath="$(RepositoryPath)" RepositorySourcesPath="$(RepositorySourcesPath)" RepositoryName="$(RepositoryName)" />
-    <Message Importance="normal" Text="[SDBSDK]: Repository information is valid." />
-  </Target>
-  <Target Name="_SDBSdkValidateProjectType">
-    <Message Importance="normal" Text="[SDBSDK]: Validating project type..." />
-    <SDBSdkValidateProjectType ProjectType="$(ProjectType)" />
-    <Message Importance="normal" Text="[SDBSDK]: Project type is valid." />
-  </Target>
 
   <!-- Microsoft.NET.Sdk Import
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->

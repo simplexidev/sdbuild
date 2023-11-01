@@ -7,12 +7,10 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
-  </PropertyGroup>
 
   <PropertyGroup>
     <UsingSimplexiDevBuildSdk>true</UsingSimplexiDevBuildSdk>
+    <SimplexiDevBuildSdkVersion>2.1.0</SimplexiDevBuildSdkVersion>
   </PropertyGroup>
 
   <!-- SimplexiDev.Build.props Imports
@@ -39,23 +37,23 @@
   <!-- Repository Information
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
   <PropertyGroup>
-    <RepositoryPath Condition="'$(RepositoryPath)'==''"></RepositoryPath>
+    <RepositoryPath Condition="'$(RepositoryPath)'==''">$(MSBuildThisFileDirectory)</RepositoryPath>
     <RepositoryOwner Condition="'$(RepositoryOwner)'==''">SimplexiDev</RepositoryOwner>
     <RepositoryName Condition="'$(RepositoryName)'==''"></RepositoryName>
     <Version Condition="'$(Version)'==''">1.0.0</Version>
     <Version Condition="'$(Version)'!='' AND '$(CIBuildNumber)'!=''">$(Version)-b$(CIBuildNumber)</Version>
     <RootNamespace Condition="'$(RootNamespace)'==''">SimplexiDev</RootNamespace>
     <RepositoryCreationYear Condition="'$(RepositoryCreationYear)'==''">$([System.DateTime]::Now.ToString('yyyy'))</RepositoryCreationYear>
-    <RepositoryBuildPath Condition="'$(RepositoryBuildPath)'==''">$(RepositoryPath)build/</RepositoryBuildPath>
+    <RepositoryBuildPath Condition="'$(RepositoryBuildPath)'==''">$(RepositoryPath).build/</RepositoryBuildPath>
     <RepositorySourcesPath Condition="'$(RepositorySourcesPath)'==''">$(RepositoryPath)sources/</RepositorySourcesPath>
   </PropertyGroup>
 
   <!-- Project Information
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
   <PropertyGroup Condition="'$(ProjectType)'==''">
-    <ProjectType Condition="$(MSBuildProjectName.Contains('.Tests'))">Tests</ProjectType>
-    <ProjectType Condition="$(MSBuildProjectName.Contains('SimplexiDev.Build.Tools'))">Tool</ProjectType>
-    <ProjectType Condition="$(MSBuildProjectName.Contains('SimplexiDev.Build.Generators.'))">Generator</ProjectType>
+    <ProjectType Condition="$(MSBuildProjectName.Contains('.Tests')) AND '$(ProjectType)'==''">Tests</ProjectType>
+    <ProjectType Condition="$(MSBuildProjectName.Contains('SimplexiDev.Build.Tools')) AND '$(ProjectType)'==''">Tool</ProjectType>
+    <ProjectType Condition="$(MSBuildProjectName.Contains('SimplexiDev.Build.Generators.')) AND '$(ProjectType)'==''">Generator</ProjectType>
     <ProjectType Condition="'$(ProjectType)'==''">Library</ProjectType>
   </PropertyGroup>
 
@@ -101,7 +99,7 @@
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
   <PropertyGroup>
     <TargetFramework Condition="'$(ProjectType)'=='Generator'">netstandard2.0</TargetFramework>
-    <TargetFramework Condition="'$(TargetFramework)'==''">net8.0</TargetFramework>
+    <TargetFramework Condition="'$(TargetFramework)'==''">net7.0</TargetFramework>
     <OutputType Condition="'$(ProjectType)'=='Tool'">Exe</OutputType>
     <OutputType Condition="'$(OutputType)'==''">Library</OutputType>
     <GenerateDocumentationFile Condition="'$(ProjectType)'=='Library'">true</GenerateDocumentationFile>
@@ -121,8 +119,8 @@
     <EmbedAllSources>true</EmbedAllSources>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <Copyright Condition="'$(RepositoryCreationYear)'=='$([System.DateTime]::Now.ToString('yyyy'))'">Copyright © $([System.DateTime]::Now.ToString('yyyy')) $(RepositoryOwner), et al. All Rights Reserved.</Copyright>
-    <Copyright Condition="'$(RepositoryCreationYear)'!='$([System.DateTime]::Now.ToString('yyyy'))'">Copyright © $(RepositoryCreationYear)-$([System.DateTime]::Now.ToString('yyyy')) $(RepositoryOwner), et al. All Rights Reserved.</Copyright>
+    <Copyright Condition="'$(RepositoryCreationYear)'=='$([System.DateTime]::Now.ToString(yyyy))'">Copyright © $([System.DateTime]::Now.ToString(yyyy)) $(RepositoryOwner), et al. All Rights Reserved.</Copyright>
+    <Copyright Condition="'$(RepositoryCreationYear)'!='$([System.DateTime]::Now.ToString(yyyy))'">Copyright © $(RepositoryCreationYear)-$([System.DateTime]::Now.ToString(yyyy)) $(RepositoryOwner), et al. All Rights Reserved.</Copyright>
     <PackageLicenseFile>$(RepositoryLicensePath)</PackageLicenseFile>
     <PackageId>$(MSBuildProjectName)</PackageId>
     <RepositoryUrl>https://github.com/$(RepositoryOwner.ToLower())/$(RepositoryName.ToLower())</RepositoryUrl>
@@ -131,8 +129,8 @@
     <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
   </PropertyGroup>
 
-  <!-- Microsoft.NET.Sdk Import
+  <!-- Microsoft.NET.Sdk Import 
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk"/>
+  <Import Condition="'$(UsingMicrosoftNETSdk)' == 'false'" Project="Sdk.props" Sdk="Microsoft.NET.Sdk"/>
 
 </Project>
