@@ -39,6 +39,10 @@
   <ItemGroup>
     <SourceRoot Include="$(RepositorySourcesPath)/"/>
   </ItemGroup>
+  
+  <ItemGroup Condition="'$(IsPackable)' == 'true' AND '$(ProjectType)' == 'Sdk'">
+    <None Include="Sdk\**" Pack="true" PackagePath="Sdk\" />
+  </ItemGroup>
 
   <!-- Resource Files
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
@@ -118,6 +122,8 @@
       <Code Type="Fragment" Language="cs"><![CDATA[
         string[] validProjectTypes = new string[]
         {
+            "Sdk",
+            "App",
             "Library",
             "Tests",
             "Generator",
