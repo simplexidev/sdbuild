@@ -6,7 +6,7 @@
     <LangVersion>latest</LangVersion>
     <Authors>SimplexiDev</Authors>
     <Company>SimplexiDev</Company>
-    <Copyright>2023 © SimplexiDev. All Rights Reserved.</Copyright>
+    <Copyright>2023-2024 © Thomas Corwin, et al. All Rights Reserved.</Copyright>
     <PackageProjectUrl>https://github.com/simplexidev/sdbuildsdk</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/simplexidev/sdbuildsdk.git</RepositoryUrl>

@@ -2,7 +2,7 @@
 
 ## Copyright Notice(s)
 
-Copyright &copy; 2017-2023 Thomas Corwin
+Copyright &copy; 2023-2024 Thomas Corwin, et al.
 
 ## License (MIT)
 
@@ -20,8 +20,3 @@ NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPO
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-## Third-Party Notices
-
-For third-party license terms and copyrights, please refer to the
-[THIRD_PARTY_NOTICES.md](https://github.com/simplexidev/sdevlibs/blob/main/THIRD_PARTY_NOTICES.md) file.
