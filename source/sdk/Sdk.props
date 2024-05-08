@@ -121,7 +121,7 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <Copyright Condition="'$(RepositoryCreationYear)'=='$([System.DateTime]::Now.ToString(yyyy))'">Copyright © $([System.DateTime]::Now.ToString(yyyy)) $(RepositoryOwner), et al. All Rights Reserved.</Copyright>
     <Copyright Condition="'$(RepositoryCreationYear)'!='$([System.DateTime]::Now.ToString(yyyy))'">Copyright © $(RepositoryCreationYear)-$([System.DateTime]::Now.ToString(yyyy)) $(RepositoryOwner), et al. All Rights Reserved.</Copyright>
-    <PackageLicenseFile>$(RepositoryLicensePath)</PackageLicenseFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageId>$(MSBuildProjectName)</PackageId>
     <RepositoryUrl>https://github.com/$(RepositoryOwner.ToLower())/$(RepositoryName.ToLower())</RepositoryUrl>
     <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
