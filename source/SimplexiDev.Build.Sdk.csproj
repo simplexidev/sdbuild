@@ -22,7 +22,7 @@
     <DevelopmentDependency>true</DevelopmentDependency>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <Version>8.0.1</Version>
+    <Version>8.0.2</Version>
   </PropertyGroup>
   <ItemGroup Condition="'$(IsPackable)' == 'true'">
     <None Include="Sdk\**" Pack="true" PackagePath="Sdk\" />

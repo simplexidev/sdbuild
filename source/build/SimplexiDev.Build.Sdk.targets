@@ -28,7 +28,10 @@
   <ItemGroup Condition="'$(ProjectType)' == 'Tests'">
     <Compile Include="tests\*.cs" />
   </ItemGroup>
-  <ItemGroup Condition="'$(ProjectType)' != 'Tests'">
+  <ItemGroup Condition="'$(ProjectType)' == 'Sdk'">
+    <Compile Include="tasks\*.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(ProjectType)' != 'Tests' AND '$(ProjectType)' != 'Sdk'">
     <Compile Include="src\*.cs" />
   </ItemGroup>
 
