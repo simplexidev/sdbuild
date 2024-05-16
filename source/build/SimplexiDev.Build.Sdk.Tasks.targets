@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~ Repository: https://github.com/simplexidev/sdbuildsdk                                                                ~
+~ Package:    SimplexiDev.Build.Sdk                                                                                    ~
+~ File:       /source/build/SimplexiDev.Build.Sdk.Tasks.targets                                                        ~
+~ License:    https://github.com/simplexidev/sdbuildsdk/blob/main/LICENSE.md                                           ~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  
+  <!--NOTE: This will resolve correctly once loaded from a NuGet package. -->
+  <UsingTask TaskName="ValidateSDBSDKContinuousIntegrationProperties" AssemblyFile="$(MSBuildThisFileDirectory)netstandard2.0/SimplexiDev.Build.Sdk.dll" />
+  <UsingTask TaskName="ValidateSDBSDKRepositoryProperties" AssemblyFile="$(MSBuildThisFileDirectory)netstandard2.0/SimplexiDev.Build.Sdk.dll" />
+  <UsingTask TaskName="GenerateSDBSDKRepositoryVersion" AssemblyFile="$(MSBuildThisFileDirectory)netstandard2.0/SimplexiDev.Build.Sdk.dll" />
+
+</Project>

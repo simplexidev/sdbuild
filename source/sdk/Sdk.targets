@@ -21,104 +21,34 @@
   <Import Condition="'$(ImportSimplexiDevBuildTargets)'=='true' AND Exists('$(SimplexiDevBuildTargetsPath)')"
           Project="$(SimplexiDevBuildTargetsPath)" />
 
-  <!-- SimplexiDev.Build.Sdk.targets Import
+  <!-- SimplexiDev.Build.Sdk Imports
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
   <Import Project="../build/SimplexiDev.Build.Sdk.targets" />
+  <Import Project="../build/SimplexiDev.Build.Sdk.Tasks.targets" />
 
-  <!-- Custom Tasks/Targets
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-  <UsingTask TaskName="_ValidateSDBSDKCIProperties" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
-    <ParameterGroup>
-      <ReturnValue ParameterType="System.Boolean" Output="true" />
-      <BuildHost ParameterType="System.String" Required="true" />
-      <Branch ParameterType="System.String" Required="true" />
-      <BuildNumber ParameterType="System.String" Required="true" />
-      <PullNumber ParameterType="System.String" Required="false" />
-    </ParameterGroup>
-    <Task>
-     <Using Namespace="System.IO" />
-     <Using Namespace="System.Collections.Generic" />
-      <Code Type="Fragment" Language="cs">
-        <![CDATA[
-        bool retVal = true;
-        List<string> validBuildHosts = new List<string>()
-        {
-            "GitHub",
-            //"GitLab",
-            //"AzurePipelines",
-            //"TravisCI",
-            //"CircleCI",
-            //"AppVeyor"
-        };
-        // Validate the `BuildHost` property.
-        if (string.IsNullOrWhitespace(BuildHost) || !validBuildHosts.Contains(BuildHost)
-            retVal = false;
-
-        // Validate the `BuildNumber` property.
-        if (string.IsNullOrWhitespace(BuildNumber) || !ulong.TryParse(BuildNumber, out ulong _))
-            retVal = false;
-
-        // Validate the `BuildBranch` property.
-        if (string.IsNullOrWhitespace(Branch) || Branch.Contains(' '))
-            return false;
-
-        // Validate the `PullNumber` property, if set.
-        if (!string.IsNullOrWhitespace(PullNumber) && !uint.TryParse(PullNumber, out uint _))
-            return false;
-
-        ReturnValue = retVal;
-        ]]>
-      </Code>
-    </Task>
-  </UsingTask>
   <Target Name="ValidateContinuousIntegrationProperties" Condition="'$(IsCIBuild)'=='true'">
-    <_ValidateSDBSDKCIProperties BuildHost="$(CIBuildHost)" Branch="$(CIBranchName)" BuildNumber="$(CIBuildNumber)" PullNumber="$(CIPullNumber)">
+    <ValidateSDBSDKContinuousIntegrationProperties BuildHost="$(CIBuildHost)" Branch="$(CIBranchName)" BuildNumber="$(CIBuildNumber)" PullNumber="$(CIPullNumber)">
       <Output PropertyName="_SimplexiDevCIProperiesAreValid" TaskParameter="ReturnValue" />
-    </_ValidateSDBSDKCIProperties>
-    <Error Condition="'$(_SimplexiDevCIProperiesAreValid)' == 'false'" Text="CI-specific properties in the SimplexiDev.Build.Sdk are invalid." Code="SDBSDK0004" ContinueOnError="ErrorAndStop" />
+    </ValidateSDBSDKContinuousIntegrationProperties>
+    <Error Condition="'$(_SimplexiDevCIProperiesAreValid)' == 'false'"
+           Text="CI-specific properties in the SimplexiDev.Build.Sdk have invalid values."
+           Code="SDBSDK0004"
+           ContinueOnError="ErrorAndStop" />
     <PropertyGroup>
-      <CIBuildDetailsAreValid>_SimplexiDevCIProperiesAreValid</CIBuildDetailsAreValid>
+      <CIPropertiesAreValid>_SimplexiDevCIProperiesAreValid</CIPropertiesAreValid>
     </PropertyGroup>
   </Target>
 
-  <!--TODO: The `Namespace` parameter needs to be checked to ensure it is valid as a namespace (only alpha-numeric charaters, can be segmented by using a `.`, each segment cannot start with a number). -->
-  <UsingTask TaskName="_ValidateSDBSDKRepositoryDetails" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
-    <ParameterGroup>
-      <ReturnValue ParameterType="System.Boolean" Output="true" />
-      <Owner ParameterType="System.String" Required="true" />
-      <RepoName ParameterType="System.String" Required="true" />
-      <Namespace ParameterType="System.String" Required="true" />
-      <Version ParameterType="System.String" Required="true" />
-      <BaselineVersion ParameterType="System.String" Required="true" />
-    </ParameterGroup>
-    <Task>
-     <Using Namespace="System" />
-     <Using Namespace="System.IO" />
-      <Code Type="Fragment" Language="cs">
-        <![CDATA[
-        bool retVal = true;
-        if (string.IsNullOrWhitespace(Owner) || Owner.Contains(' '))
-            retVal = false;
-        if (string.IsNullOrWhitespace(Name) || RepoName.Contains(' '))
-            retVal = false;
-        if (string.IsNullOrWhitespace(Namespace))
-            retVal = false;
-        if (string.IsNullOrWhitespace(Version) || !System.Version.TryParse(Version, out System.Version _))
-            retVal = false;
-        if (string.IsNullOrWhitespace(BaselineVersion) || !System.Version.TryParse(BaselineVersion, out System.Version _))
-            retVal = false;
-        ReturnValue = retVal;
-        ]]>
-      </Code>
-    </Task>
-  </UsingTask>
   <Target Name="ValidateRepositoryProperties">
-    <_ValidateSDBSDKRepositoryDetails Owner="$(RepositoryOwner)" RepoName="$(RepositoryName)" Namespace="$(RepositoryNamespace)" Version="$(RepositoryVersion)" BaselineVersion="$(RepositoryBaselineVersion)">
+    <ValidateSDBSDKRepositoryProperties Owner="$(RepositoryOwner)" RepoName="$(RepositoryName)" Namespace="$(RepositoryNamespace)" Version="$(RepositoryVersion)" BaselineVersion="$(RepositoryBaselineVersion)">
       <Output PropertyName="_SimplexiDevRepositoryProperiesAreValid" TaskParameter="ReturnValue" />
-    </_ValidateSDBSDKRepositoryDetails>
-    <Error Condition="'$(_SimplexiDevRepositoryProperiesAreValid)' == 'false'" Text="Repository-specific properties in the SimplexiDev.Build.Sdk properties are invalid." Code="SDBSDK0001" ContinueOnError="ErrorAndStop" />
+    </ValidateSDBSDKRepositoryProperties>
+    <Error Condition="'$(_SimplexiDevRepositoryProperiesAreValid)' == 'false'"
+           Text="Repository-specific properties in the SimplexiDev.Build.Sdk properties are invalid."
+           Code="SDBSDK0001"
+           ContinueOnError="ErrorAndStop" />
     <PropertyGroup>
-      <RepositoryDetailsAreValid>_SimplexiDevRepositoryProperiesAreValid</RepositoryDetailsAreValid>
+      <RepositoryPropertiesAreValid>_SimplexiDevRepositoryProperiesAreValid</RepositoryPropertiesAreValid>
     </PropertyGroup>
   </Target>
 
@@ -132,44 +62,14 @@
     </PropertyGroup>
   </Target>
 
-  <UsingTask TaskName="_GenerateSDBSDKRepositoryVersion" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
-    <ParameterGroup>
-      <ReturnValue ParameterType="System.String" Output="true" />
-      <IsCIBuild ParameterType="System.Boolean" Required="true" />
-      <RepoVersion ParameterType="System.String" Required="true" />
-      <Branch ParameterType="System.String" Required="true" />
-      <BuildNumber ParameterType="System.String" Required="true" />
-      <PullNumber ParameterType="System.String" Required="false" />
-    </ParameterGroup>
-    <Task>
-     <Using Namespace="System.IO" />
-     <Using Namespace="System.Collections.Generic" />
-      <Code Type="Fragment" Language="cs">
-        <![CDATA[
-        string retVal = RepoVersion;
-
-        if (IsCIBuild)
-        {
-            if (!string.IsNullOrWhitespace(PullNumber) && uint.TryParse(PullNumber, out uint pullNumber))
-                retVal += $"-b{BuildNumber}.pull{pullNumber}";
-            else
-                retVal += $"-b{BuildNumber}.{Branch.Replace("/", ".")}";
-        }
-        else
-            retVal += $"-local";
-
-        ReturnValue = retVal;
-        ]]>
-      </Code>
-    </Task>
-  </UsingTask>
   <Target Name="GenerateRepositoryVersion" DependsOnTargets="ValidateContinuousIntegrationProperties;ValidateRepositoryProperties">
-    <_GenerateSDBSDKRepositoryVersion IsCIBuild="$(IsCIBuild)" RepoVersion="$(RepositoryVersion)" Branch="$(CIBranchName)" BuildNumber="$(CIBuildNumber)" PullNumber="$(CIPullNumber)">
-      <Output PropertyName="_SimplexiDevRepositoryVersion" TaskParameter="ReturnValue" />
-    </_GenerateSDBSDKRepositoryVersion>
-    <Error Condition="'$(_SimplexiDevRepositoryVersion)' == ''" Text="Repository- version in the SimplexiDev.Build.Sdk is empty or invalid." Code="SDBSDK0003" ContinueOnError="ErrorAndStop" />
+    <GenerateSDBSDKRepositoryVersion IsCIBuild="$(IsCIBuild)" RepositoryVersion="$(RepositoryVersion)" BranchName="$(CIBranchName)" BuildNumber="$(CIBuildNumber)" PullNumber="$(CIPullNumber)">
+      <Output PropertyName="GeneratedRepositoryVersion" TaskParameter="GeneratedRepositoryVersion" />
+    </GenerateSDBSDKRepositoryVersion>
+    <Error Condition="'$(_SimplexiDevRepositoryVersion)' == ''" Text="Repository version in the SimplexiDev.Build.Sdk is empty or invalid." Code="SDBSDK0003" ContinueOnError="ErrorAndStop" />
     <PropertyGroup>
-      <Version>_SimplexiDevRepositoryVersion</Version>
+      <Version>$(GeneratedRepositoryVersion)</Version>
+      <VersionWasGenerated>true</VersionWasGenerated>
     </PropertyGroup>
   </Target>
 
