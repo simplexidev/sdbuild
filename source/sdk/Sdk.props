@@ -2,19 +2,27 @@
 <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ~ Repository: https://github.com/simplexidev/sdbuildsdk                                                                ~
 ~ Package:    SimplexiDev.Build.Sdk                                                                                    ~
-~ File:       /sdk/Sdk.props                                                                                           ~
+~ File:       /source/sdk/Sdk.props                                                                                    ~
 ~ License:    https://github.com/simplexidev/sdbuildsdk/blob/main/LICENSE.md                                           ~
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+<!--
+| UsingSimplexiDevBuildSdk | Indicates to other targets that SimplexiDev.Build.Sdk is being used.\r\nThis must be set as early as possible so everything in the SDK can depend on it. |
+| SimplexiDevBuildSdkVersion | The version of SimplexiDev.Build.Sdk being used.\r\nThe Major and Minor portions of the version number will be the same as the targetted Microsoft.NET.Sdk version. |
+| ImportSimplexiDevBuildProps | |
+| SimplexiDevBuildPropsPath | |
+-->
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
     <UsingSimplexiDevBuildSdk>true</UsingSimplexiDevBuildSdk>
-    <SimplexiDevBuildSdkVersion>8.0.0</SimplexiDevBuildSdkVersion>
+    <SimplexiDevBuildSdkVersion>8.0.1</SimplexiDevBuildSdkVersion>
   </PropertyGroup>
 
   <!-- SimplexiDev.Build.props Imports
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <!-- NOTE: This is basically the same as the Dirctory.Build.props files in the Microsoft.NET.Sdk. -->
   <PropertyGroup>
     <ImportSimplexiDevBuildProps Condition="'$(ImportSimplexiDevBuildProps)'!='false'">true</ImportSimplexiDevBuildProps>
   </PropertyGroup>
@@ -25,131 +33,10 @@
   </PropertyGroup>
   <Import Condition="'$(ImportSimplexiDevBuildProps)'=='true' AND Exists('$(SimplexiDevBuildPropsPath)')"
           Project="$(SimplexiDevBuildPropsPath)" />
-
-
-  <!-- Continuous Integration
+      
+  <!-- Continuous Integration (CI)
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-  <PropertyGroup Condition="'$(CIBuildNumber)'==''">
-    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-    <Configuration>Release</Configuration>
-  </PropertyGroup>
-
-  <!-- Repository Information
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-  <PropertyGroup>
-    <RepositoryPath Condition="'$(RepositoryPath)'==''">$(MSBuildProjectDirectory)</RepositoryPath>
-    <RepositoryOwner Condition="'$(RepositoryOwner)'==''">SimplexiDev</RepositoryOwner>
-    <RepositoryName Condition="'$(RepositoryName)'==''"></RepositoryName>
-    <VersionBaseline Condition="'$(VersionBaseline)'==''">1.0.0</VersionBaseline>
-    <Version Condition="'$(Version)'==''">1.0.0</Version>
-    <Version Condition="'$(Version)'!='' AND '$(CIBuildNumber)'!=''">$(Version)-b$(CIBuildNumber)</Version>
-    <RootNamespace Condition="'$(RootNamespace)'==''">SimplexiDev</RootNamespace>
-    <RepositoryCreationYear Condition="'$(RepositoryCreationYear)'==''">$([System.DateTime]::Now.ToString('yyyy'))</RepositoryCreationYear>
-    <RepositoryBuildPath Condition="'$(RepositoryBuildPath)'==''">$([System.IO.Path]::Combine($(RepositoryPath),'.build'))</RepositoryBuildPath>
-    <RepositorySourcesPath Condition="'$(RepositorySourcesPath)'==''">$([System.IO.Path]::Combine($(RepositoryPath),'sources'))</RepositorySourcesPath>
-  </PropertyGroup>
-
-  <PropertyGroup>
-  </PropertyGroup>
-
-  <!-- ProjectType Property
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-  <PropertyGroup Condition="'$(ProjectType)'==''">
-    <ProjectType Condition="$(MSBuildProjectName.StartsWith('SimplexiDev.')) AND $(MSBuildProjectName.EndsWith('.Sdk')) AND '$(ProjectType)'==''">Sdk</ProjectType>
-    <ProjectType Condition="$(MSBuildProjectName.StartsWith('SimplexiDev.Apps.')) AND $(MSBuildProjectName.EndsWith('.Apps')) AND '$(ProjectType)'==''">App</ProjectType>
-    <ProjectType Condition="$(MSBuildProjectName.StartsWith('SimplexiDev.')) AND $(MSBuildProjectName.EndsWith('.Tests')) AND '$(ProjectType)'==''">Tests</ProjectType>
-    <ProjectType Condition="$(MSBuildProjectName.StartsWith('SimplexiDev.Build.Tools.')) AND '$(ProjectType)'==''">Tool</ProjectType>
-    <ProjectType Condition="$(MSBuildProjectName.StartsWith('SimplexiDev.Build.Generators.')) AND '$(ProjectType)'==''">Generator</ProjectType>
-    <ProjectType Condition="'$(ProjectType)'==''">Library</ProjectType>
-  </PropertyGroup>
-
-  <!-- Output Directories
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-  <PropertyGroup>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-
-    <BaseOutputPath>$([System.IO.Path]::Combine($(RepositoryBuildPath),'bin'))</BaseOutputPath>
-    <OutputPath>$([System.IO.Path]::Combine($(BaseOutputPath),$(MSBuildProjectName)))</OutputPath>
-    <BaseIntermediateOutputPath>$([System.IO.Path]::Combine($(RepositoryBuildPath),'obj'))</BaseIntermediateOutputPath>
-    <IntermediateOutputPath>$([System.IO.Path]::Combine($(BaseIntermediateOutputPath),$(MSBuildProjectName)))</IntermediateOutputPath>
-  </PropertyGroup>
-
-  <!-- Output Directories (ProjcetType-specific)
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-  <PropertyGroup>
-    <PackageOutputPath Condition="'$(IsPackable)'=='true' AND '$(ProjectType)'!='Tests' AND '$(Configuration)'=='Release'">$([System.IO.Path]::Combine($(RepositoryBuildPath),'pkg'))</PackageOutputPath>
-    <DocumentationFile Condition="'$(IsPackable)'=='true' AND '$(ProjectType)'=='Library' AND '$(Configuration)'=='Release'">$([System.IO.Path]::Combine($(RepositoryBuildPath),'doc','$(MSBuildProjectName).xml'))</DocumentationFile>
-  </PropertyGroup>
-  
-  <!-- Build Properties
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-  <PropertyGroup>
-    <LangVersion>12.0</LangVersion>
-    <AssemblyName>$(MSBuildProjectName)</AssemblyName>
-    <AssemblyTitle>$(MSBuildProjectName)</AssemblyTitle>
-    <NeutralLanguage>en</NeutralLanguage>
-    <EnableDefaultItems>false</EnableDefaultItems>
-    <ImplicitUsings>disable</ImplicitUsings>
-    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
-    <DebugSymbols>true</DebugSymbols>
-  </PropertyGroup>
-
-  <!-- Configuration-Specific Build Properties
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-  <PropertyGroup>
-    <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
-    <DefineConstants>$(DefineConstants);SDEV;$(MSBuildProjectName.ToUpper().Replace('.', '_'))</DefineConstants>
-    <DefineConstants Condition="'$(Configuration)' == 'Release'">$(DefineConstants);RELEASE</DefineConstants>
-    <Optimize Condition="'$(Configuration)' == 'Debug'">false</Optimize>
-    <Optimize Condition="'$(Configuration)' == 'Release'">true</Optimize>
-    <DebugType Condition="'$(Configuration)' == 'Debug'">full</DebugType>
-    <DebugType Condition="'$(Configuration)' == 'Release'">embedded</DebugType>
-  </PropertyGroup>
-
-  <!-- ProjectType-Specific Properties
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-  <PropertyGroup>
-    <TargetFramework Condition="'$(ProjectType)'=='Generator' OR '$(ProjectType)'=='Sdk'">netstandard2.0</TargetFramework>
-    <TargetFramework Condition="'$(TargetFramework)'==''">net8.0</TargetFramework>
-    <OutputType Condition="'$(ProjectType)'=='Tool'">Exe</OutputType>
-    <OutputType Condition="'$(ProjectType)'=='App'">WinExe</OutputType>
-    <OutputType Condition="'$(OutputType)'==''">Library</OutputType>
-    <GenerateDocumentationFile Condition="'$(ProjectType)'=='Library'">true</GenerateDocumentationFile>
-    <GenerateDocumentationFile Condition="'$(ProjectType)'!='Library'">false</GenerateDocumentationFile>
-  </PropertyGroup>
-
-  <!-- IsPackable Property
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-  <PropertyGroup  Condition="'$(IsPackable)'==''">
-    <IsPackable Condition="'$(ProjectType)'!='Tests' AND '$(ProjectType)'!='App'">true</IsPackable>
-    <IsPackable Condition="'$(IsPackable)'!='true'">false</IsPackable>
-  </PropertyGroup>
-
-  <!-- Package Properties
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-  <PropertyGroup Condition="'$(IsPackable)' == 'true'">
-    <PackAsTool Condition="'$(ProjectType)'=='Tool'">true</PackAsTool>
-    <PackageType Condition="'$(ProjectType)'=='Sdk'">MSBuildSdk</PackageType>
-    <SuppressDependenciesWhenPacking Condition="'$(ProjectType)'=='Sdk'">true</SuppressDependenciesWhenPacking>
-    <DevelopmentDependency Condition="'$(ProjectType)'=='Sdk'">true</DevelopmentDependency>
-    <PackageReadmeFile>\README.md</PackageReadmeFile>
-    <EnablePackageValidation>true</EnablePackageValidation>
-    <PackageValidationBaselineVersion>$(VersionBaseline)</PackageValidationBaselineVersion>
-    <RepositoryType>git</RepositoryType>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <EmbedAllSources>true</EmbedAllSources>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <Copyright Condition="'$(RepositoryCreationYear)'=='$([System.DateTime]::Now.ToString(yyyy))'">Copyright © $([System.DateTime]::Now.ToString(yyyy)) $(RepositoryOwner), et al. All Rights Reserved.</Copyright>
-    <Copyright Condition="'$(RepositoryCreationYear)'!='$([System.DateTime]::Now.ToString(yyyy))'">Copyright © $(RepositoryCreationYear)-$([System.DateTime]::Now.ToString(yyyy)) $(RepositoryOwner), et al. All Rights Reserved.</Copyright>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageId>$(MSBuildProjectName)</PackageId>
-    <RepositoryUrl>https://github.com/$(RepositoryOwner.ToLower())/$(RepositoryName.ToLower())</RepositoryUrl>
-    <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
-    <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Debug'">false</GeneratePackageOnBuild>
-    <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
-  </PropertyGroup>
+  <Import Project="../build/SimplexiDev.Build.Sdk.props" />
 
   <!-- Microsoft.NET.Sdk Import 
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->

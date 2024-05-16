@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~ Repository: https://github.com/simplexidev/sdbuildsdk                                                                ~
+~ Package:    SimplexiDev.Build.Sdk                                                                                    ~
+~ File:       /source/build/DefaultAssemblyAttributes.targets                                                          ~
+~ License:    https://github.com/simplexidev/sdbuildsdk/blob/main/LICENSE.md                                           ~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ItemGroup Condition="'$(ProjectType)' != 'Tests'">
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>$(MSBuildProjectName).Tests</_Parameter1>
+      <_Parameter1_TypeName>System.String</_Parameter1_TypeName>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyKeyFile">
+      <_Parameter1>$([System.IO.Path]::Combine('$(MSBuildThisFileDirectory)', 'sdevpub.snk'))</_Parameter1>
+      <_Parameter1_TypeName>System.String</_Parameter1_TypeName>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyDelaySign">
+      <_Parameter1>true</_Parameter1>
+      <_Parameter1_TypeName>System.Boolean</_Parameter1_TypeName>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <!-- Source Files
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <ItemGroup Condition="'$(ProjectType)' == 'Tests'">
+    <Compile Include="tests\*.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(ProjectType)' != 'Tests'">
+    <Compile Include="src\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SourceRoot Include="$(RepositorySourcesPath)/"/>
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(ProjectType)' == 'Sdk'">
+    <None Include="Sdk\**" PackagePath="Sdk\">
+      <Pack Condition="'$(IsPackable)'=='true'">true</Pack>
+    </None>
+    <None Include="build\**" Pack="true" PackagePath="build\">
+      <Pack Condition="'$(IsPackable)'=='true'">true</Pack>
+    </None>
+  </ItemGroup>
+
+  <!-- Resource Files
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <ItemGroup>
+    <_SDResources Include="res\*.resx" />
+    <EmbeddedResource Include="@(_SDResources)">
+      <LogicalName>$(RootNamespace).Resources.$([System.IO.Path]::GetFileNameWithoutExtension('%(Filename)'))</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+  
+  <!-- Project-specific README file
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <ItemGroup Condition="'$(IsPackable)'=='true'">
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <!-- Default ProjectReferences
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <ItemGroup Condition="'$(ProjectType)'=='Tests'">
+    <ProjectReference Include="$(MSBuildProjectName.Replace('.Tests', ''))" />
+  </ItemGroup>
+  
+  <!-- Default PackageReferences
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <ItemGroup Condition="'$(ProjectType)'=='Generator'">
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.2" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(ProjectType)'=='Sdk'">
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.9.5" ExcludeAssets="Runtime" PrivateAssets="All" />
+    <PackageReference Include="NuGet.Frameworks" Version="6.9.1" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(ProjectType)'=='Tests'">
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="3.1.1" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.1.1" />
+  </ItemGroup>
+
+</Project>

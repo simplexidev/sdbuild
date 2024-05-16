@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~ Repository: https://github.com/simplexidev/sdbuildsdk                                                                ~
+~ Package:    SimplexiDev.Build.Sdk                                                                                    ~
+~ File:       /source/build/ContinuousIntegration.props                                                                ~
+~ License:    https://github.com/simplexidev/sdbuildsdk/blob/main/LICENSE.md                                           ~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+<!-- Properties
+| EnableCIBuilds | Indicates if continuous integration (CI) builds are enabled.\r\nThe default value for this property is `true`. |
+| InferCIBuildDetails | Indicates that build details, including the build host name, git branch, PR number, and build number from the build host directly (via environment variables).\r\nIf this property is set to `false`, the properties `CIBuildHost`, `CIBuildNumber`, `CIBranchName`, and optionally `CIPullNumber` should be provided via the command-line when building (on the host only).\r\nThe default value for this property is `true`. |
+| CIBuildHost | The build host that is currently being used to build the project.\r\nThis property must be set via the command-line on a build host when the `EnableCIBuilds` property is `true` and the `InferCIBuildDetails` property is `false`. |
+| CIBuildNumber | The build number provided by the build host.\r\nThis property must be set via the command-line on a build host when the `EnableCIBuilds` property is `true` and the `InferCIBuildDetails` property is `false` |
+| CIBranchName | The branch name of the repository being built.\r\nThis property must be set via the command-line on a build host when the `EnableCIBuilds` property is `true` and the `InferCIBuildDetails` property is `false` |
+| CIPullNumber | The pull request number of the current build.\r\nThis property should be set via the command-line on a build host when the `EnableCIBuilds` property is `true`, the `InferCIBuildDetails` property is `false`, and the current build is from a pull request. |
+| IsInferredCIBuild | Indicates if the build details were inferred by the host. If set to `false`, the properties were set via command-line and were not inferred. |
+| IsCIBuild | Indicated whether this build is being built on a build host via CI. |
+| RepositoryOwner | The name of the author/owner of the repository. This should be a single name. This property has no default value and must be set or a build error will occur. |
+| RepositoryName | The name of the repository. This property has no default value and must be set or a build error will occur. |
+| RepositoryCreationYear | The year the repository was created. This is used for the `Copyright` property. |
+| RepositoryNamespace | The root namespace used by all projects in the repository. This property has no default value and must be set or a build error will occur. |
+| RepositoryVersion | The global version of all packages in the repository. This property has no default value and must be set or a build error will occur. |
+| RepositoryBaselineVersion | The baseline version of all projects in the repository. This is used by the `PackageValidationBaselineVersion` property. This property has no default value and must be set or a build error will occur. |
+| RepositoryRootPath | The root path of the repository. This property has no default value and must be set or a build error will occur. |
+| RepositoryBuildPath | The common build path for all projects in this repository. Defaults to a folder named `.build` in the repository root. |
+| RepositorySourcesPath | The common sources path containing all projects in the repository. Defaults to a folder named `sources` in the repository root. |
+| ProjectType | The type of project. Supported values are: `Library`, `Tests`, `Tool`, `Generator`, `App`, and `Sdk`. |
+-->
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  
+  <!-- Continuous Integration
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <PropertyGroup>
+    <EnableCIBuilds Condition="'$(EnableCIBuilds)'!='false'">true</EnableCIBuilds>
+    <InferCIBuildDetails Condition="'$(InferCIBuildDetails)'!='false'">true</InferCIBuildDetails>
+  </PropertyGroup>
+  
+  <!--TODO: Add support for Azure Pipelines, AppVeyor, Travis CI, GitLab, and Circle CI. -->
+  <Choose>
+    <!-- GitHub Actions -->
+    <When Condition="'$(GITHUB_ACTIONS)'=='true'">
+      <PropertyGroup Condition="'$(InferCIBuildDetails)'=='true' AND '$(EnableCIBuilds)'=='true'">
+        <CIBuildHost>GitHub</CIBuildHost>
+        <CIBuildNumber Condition="'$(GITHUB_RUN_NUMBER)'!=''">$(GITHUB_RUN_NUMBER)</CIBuildNumber>
+        <CIBranchName Condition="'$(GITHUB_REF)'!=''">$(GITHUB_REF.Replace('refs/heads/', '').Replace('refs/tags/', ''))</CIBranchName>
+        <CIPullNumber Condition="'$(GITHUB_REF)'!='' AND $(GITHUB_REF.Contains('refs/pull/'))">$(GITHUB_REF.Replace('refs/pull/', '').Replace('/merge', ''))</CIPullNumber>
+        <IsInferredCIBuild>true</IsInferredCIBuild>
+      </PropertyGroup>
+    </When>
+    <!-- If none of the other `When` statements are hit, we expect everything to come from the command-line or have CI disabled. -->
+    <Otherwise>
+      <PropertyGroup Condition="'$(InferCIBuildDetails)'=='false' AND '$(EnableCIBuilds)'=='true'">
+        <IsInferredCIBuild>false</IsInferredCIBuild>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
+
+  <PropertyGroup>
+    <IsCIBuild Condition="'$(IsInferredCIBuild)'!=''">true</IsCIBuild>
+    <IsCIBuild Condition="'$(IsCIBuild)'!='true'">false</IsCIBuild>
+  </PropertyGroup>
+
+  <!-- MSBuild Overrides -->
+  <PropertyGroup Condition="'$(IsCIBuild)'=='true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <Configuration>Release</Configuration>
+  </PropertyGroup>
+  
+  <!-- Repository Information
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <PropertyGroup>
+    <RepositoryOwner Condition="'$(RepositoryOwner)'==''"></RepositoryOwner>
+    <RepositoryName Condition="'$(RepositoryName)'==''"></RepositoryName>
+    <RepositoryCreationYear Condition="'$(RepositoryCreationYear)'==''">$([System.DateTime]::Now.ToString('yyyy'))</RepositoryCreationYear>
+    <RepositoryNamespace Condition="'$(RepositoryNamespace)'==''" />
+    <RepositoryVersion Condition="'$(RepositoryVersion)'==''"></RepositoryVersion>
+    <RepositoryBaselineVersion Condition="'$(RepositoryBaselineVersion)'==''"></RepositoryBaselineVersion>
+  </PropertyGroup>
+
+  <!-- Default Paths (Root/Build/Sources)
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <PropertyGroup>
+    <RepositoryRootPath Condition="'$(RepositoryRootPath)'==''"></RepositoryRootPath>
+    <RepositoryBuildPath Condition="'$(RepositoryBuildPath)'==''">$([System.IO.Path]::Combine($(RepositoryRootPath),'.build'))</RepositoryBuildPath>
+    <RepositorySourcesPath Condition="'$(RepositorySourcesPath)'==''">$([System.IO.Path]::Combine($(RepositoryRootPath),'sources'))</RepositorySourcesPath>
+
+    <!-- MSBuild Overrides -->
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <BaseOutputPath>$([System.IO.Path]::Combine($(RepositoryBuildPath),'bin'))</BaseOutputPath>
+    <OutputPath>$([System.IO.Path]::Combine($(BaseOutputPath),$(MSBuildProjectName)))</OutputPath>
+    <BaseIntermediateOutputPath>$([System.IO.Path]::Combine($(RepositoryBuildPath),'obj'))</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$([System.IO.Path]::Combine($(BaseIntermediateOutputPath),$(MSBuildProjectName)))</IntermediateOutputPath>
+  </PropertyGroup>
+
+  <!-- ProjectType Property
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <Choose>
+    <When Condition="$(MSBuildProjectName.StartsWith('$(RepositoryNamespace).')) AND $(MSBuildProjectName.EndsWith('.Sdk'))">
+      <PropertyGroup>
+        <ProjectType>Sdk</ProjectType>
+        <TargetFramework Condition="'$(TargetFramework)'==''">netstandard2.0</TargetFramework>
+        <OutputType Condition="'$(OutputType)'==''">Library</OutputType>
+        <IsPackable Condition="'$(IsPackable)'==''">true</IsPackable>
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <GenerateDocumentationFile Condition="'$(GenerateDocumentationFile)'==''">true</GenerateDocumentationFile>
+      </PropertyGroup>
+    </When>
+    <When Condition="$(MSBuildProjectName.StartsWith('$(RepositoryNamespace).Apps.')) AND $(MSBuildProjectName.EndsWith('.Apps'))">
+      <PropertyGroup>
+        <ProjectType>App</ProjectType>
+        <TargetFramework Condition="'$(TargetFramework)'==''">net8.0-windows</TargetFramework>
+        <OutputType Condition="'$(OutputType)'==''">WinExe</OutputType>
+        <UseWindowsForms Condition="'$(OutputType)'==''">true</UseWindowsForms>
+        <IsPackable Condition="'$(IsPackable)'==''">false</IsPackable>
+        <GenerateDocumentationFile Condition="'$(GenerateDocumentationFile)'==''">false</GenerateDocumentationFile>
+      </PropertyGroup>
+    </When>
+    <When Condition="$(MSBuildProjectName.StartsWith('$(RepositoryNamespace).')) AND $(MSBuildProjectName.EndsWith('.Tests'))">
+      <PropertyGroup>
+        <ProjectType>Tests</ProjectType>
+        <TargetFramework Condition="'$(TargetFramework)'==''">net8.0</TargetFramework>
+        <OutputType Condition="'$(OutputType)'==''">Library</OutputType>
+        <IsPackable Condition="'$(IsPackable)'==''">false</IsPackable>
+        <GenerateDocumentationFile Condition="'$(GenerateDocumentationFile)'==''">false</GenerateDocumentationFile>
+      </PropertyGroup>
+    </When>
+    <When Condition="$(MSBuildProjectName.StartsWith('$(RepositoryNamespace).Build.Tools.'))">
+      <PropertyGroup>
+        <ProjectType>Tool</ProjectType>
+        <TargetFramework Condition="'$(TargetFramework)'==''">net8.0</TargetFramework>
+        <OutputType Condition="'$(OutputType)'==''">Exe</OutputType>
+        <IsPackable Condition="'$(IsPackable)'==''">true</IsPackable>
+        <GenerateDocumentationFile Condition="'$(GenerateDocumentationFile)'==''">false</GenerateDocumentationFile>
+      </PropertyGroup>
+    </When>
+    <When Condition="$(MSBuildProjectName.StartsWith('$(RepositoryNamespace).Build.Generators.'))">
+      <PropertyGroup>
+        <ProjectType>Generator</ProjectType>
+        <TargetFramework Condition="'$(TargetFramework)'==''">netstandard2.0</TargetFramework>
+        <OutputType Condition="'$(OutputType)'==''">Library</OutputType>
+        <IsPackable Condition="'$(IsPackable)'==''">true</IsPackable>
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <GenerateDocumentationFile Condition="'$(GenerateDocumentationFile)'==''">true</GenerateDocumentationFile>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <ProjectType>Library</ProjectType>
+        <TargetFramework Condition="'$(TargetFramework)'==''">net8.0</TargetFramework>
+        <OutputType Condition="'$(OutputType)'==''">Library</OutputType>
+        <IsPackable Condition="'$(IsPackable)'==''">true</IsPackable>
+        <GenerateDocumentationFile Condition="'$(GenerateDocumentationFile)'==''">true</GenerateDocumentationFile>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
+
+  <PropertyGroup>
+    <RepositoryPath Condition="'$(RepositoryPath)'==''">$(MSBuildProjectDirectory)</RepositoryPath>
+    <VersionBaseline Condition="'$(VersionBaseline)'==''">1.0.0</VersionBaseline>
+    <Version Condition="'$(Version)'==''">1.0.0</Version>
+    <Version Condition="'$(Version)'!='' AND '$(CIBuildNumber)'!=''">$(Version)-b$(CIBuildNumber)</Version>
+    <RootNamespace Condition="'$(RootNamespace)'==''">SimplexiDev</RootNamespace>
+    <RepositoryBuildPath Condition="'$(RepositoryBuildPath)'==''">$([System.IO.Path]::Combine($(RepositoryPath),'.build'))</RepositoryBuildPath>
+    <RepositorySourcesPath Condition="'$(RepositorySourcesPath)'==''">$([System.IO.Path]::Combine($(RepositoryPath),'sources'))</RepositorySourcesPath>
+  </PropertyGroup>
+  
+  <!-- Build Properties
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <PropertyGroup>
+    <LangVersion>latestMajor</LangVersion>
+    <AssemblyName>$(MSBuildProjectName)</AssemblyName>
+    <AssemblyTitle>$(MSBuildProjectName)</AssemblyTitle>
+    <NeutralLanguage>en</NeutralLanguage>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+
+  <!-- Configuration-Specific Build Properties
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <PropertyGroup>
+    <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
+    <DefineConstants>$(DefineConstants);SDEV;$(MSBuildProjectName.ToUpper().Replace('.', '_'))</DefineConstants>
+    <DefineConstants Condition="'$(Configuration)' == 'Release'">$(DefineConstants);RELEASE</DefineConstants>
+    <Optimize Condition="'$(Configuration)' == 'Debug'">false</Optimize>
+    <Optimize Condition="'$(Configuration)' == 'Release'">true</Optimize>
+    <DebugType Condition="'$(Configuration)' == 'Debug'">full</DebugType>
+    <DebugType Condition="'$(Configuration)' == 'Release'">embedded</DebugType>
+  </PropertyGroup>
+
+  <!-- Package Properties
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <PropertyGroup Condition="'$(IsPackable)' == 'true'">
+    <PackageOutputPath Condition="'$(Configuration)'=='Release'">$([System.IO.Path]::Combine($(RepositoryBuildPath),'pkg'))</PackageOutputPath>
+    <DocumentationFile Condition="'$(Configuration)'=='Release'">$([System.IO.Path]::Combine($(RepositoryBuildPath),'doc','$(MSBuildProjectName).xml'))</DocumentationFile>
+    <PackAsTool Condition="'$(ProjectType)'=='Tool'">true</PackAsTool>
+    <PackageType Condition="'$(ProjectType)'=='Sdk'">MSBuildSdk</PackageType>
+    <SuppressDependenciesWhenPacking Condition="'$(ProjectType)'=='Sdk'">true</SuppressDependenciesWhenPacking>
+    <DevelopmentDependency Condition="'$(ProjectType)'=='Sdk'">true</DevelopmentDependency>
+    <PackageReadmeFile>\README.md</PackageReadmeFile>
+    <EnablePackageValidation>true</EnablePackageValidation>
+    <PackageValidationBaselineVersion>$(VersionBaseline)</PackageValidationBaselineVersion>
+    <RepositoryType>git</RepositoryType>
+    <Authors>$(RepositoryOwner)</Authors>
+    <PublishRepositoryUrl Condition="'$(PublishRepositoryUrl)'=='' AND '$(_IsCIBuild)'=='true'">true</PublishRepositoryUrl>
+    <EmbedUntrackedSources Condition="'$(EmbedUntrackedSources)'==''">true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <Copyright Condition="'$(RepositoryCreationYear)'=='$([System.DateTime]::Now.ToString(yyyy))'">Copyright © $([System.DateTime]::Now.ToString(yyyy)) $(RepositoryOwner), et al. All Rights Reserved.</Copyright>
+    <Copyright Condition="'$(RepositoryCreationYear)'!='$([System.DateTime]::Now.ToString(yyyy))'">Copyright © $(RepositoryCreationYear)-$([System.DateTime]::Now.ToString(yyyy)) $(RepositoryOwner), et al. All Rights Reserved.</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageId>$(MSBuildProjectName)</PackageId>
+    <PackageProjectUrl>https://github.com/$(RepositoryOwner.ToLower())/$(RepositoryName.ToLower())</PackageProjectUrl>
+    <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Debug'">false</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+</Project>
