@@ -178,6 +178,9 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
     <DebugSymbols>true</DebugSymbols>
+    <SignAssembly>true</SignAssembly>
+    <PublicSign>true</PublicSign>
+    <AssemblyOriginatorKeyFile>$([System.IO.Path]::Combine('$(MSBuildThisFileDirectory)', 'sdevpub.snk'))</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <!-- Configuration-Specific Build Properties
